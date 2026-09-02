@@ -3,7 +3,7 @@
 namespace Wexample\SymfonyFile\Api\Dto;
 
 use Wexample\SymfonyApi\Api\Dto\AbstractEntityDto;
-use Wexample\SymfonyFile\Entity\FileSystemItemEntity;
+use Wexample\SymfonyFile\Entity\FileSystemItem;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
 class PublicFileSystemItemDto extends AbstractEntityDto
@@ -15,7 +15,7 @@ class PublicFileSystemItemDto extends AbstractEntityDto
     public string $type;
 
     /**
-     * @param FileSystemItemEntity $entity
+     * @param FileSystemItem $entity
      */
     public static function fromEntity(AbstractEntity $entity): self
     {

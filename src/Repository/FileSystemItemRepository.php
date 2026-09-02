@@ -5,7 +5,7 @@ namespace Wexample\SymfonyFile\Repository;
 use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\Uid\Uuid;
 use UnexpectedValueException;
-use Wexample\SymfonyFile\Entity\FileSystemItemEntity;
+use Wexample\SymfonyFile\Entity\FileSystemItem;
 use Wexample\SymfonyFile\Enum\FileSystemItemType;
 
 class FileSystemItemRepository implements ObjectRepository
@@ -21,14 +21,14 @@ class FileSystemItemRepository implements ObjectRepository
 
     public function getClassName(): string
     {
-        return FileSystemItemEntity::class;
+        return FileSystemItem::class;
     }
 
     /**
      * A file system item is addressed by its path: the uuid the entity carries
      * is a one way hash of that path, and cannot be resolved back to a location.
      */
-    public function find(mixed $id): ?FileSystemItemEntity
+    public function find(mixed $id): ?FileSystemItem
     {
         if ($id instanceof Uuid) {
             throw new UnexpectedValueException(
@@ -41,7 +41,7 @@ class FileSystemItemRepository implements ObjectRepository
         ]);
     }
 
-    public function findOneBy(array $criteria): ?FileSystemItemEntity
+    public function findOneBy(array $criteria): ?FileSystemItem
     {
         return $this->findBy($criteria, null, 1)[0] ?? null;
     }
@@ -81,9 +81,9 @@ class FileSystemItemRepository implements ObjectRepository
         ]);
     }
 
-    private function createItem(string $absolutePath): FileSystemItemEntity
+    private function createItem(string $absolutePath): FileSystemItem
     {
-        return new FileSystemItemEntity(
+        return new FileSystemItem(
             $this->toRelativePath($absolutePath),
             FileSystemItemType::fromPath($absolutePath)
         );

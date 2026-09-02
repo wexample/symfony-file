@@ -8,7 +8,7 @@ use Wexample\SymfonyFile\Enum\FileSystemItemType;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
 #[PseudocodeExport(inherited: true)]
-class FileSystemItemEntity extends AbstractEntity
+class FileSystemItem extends AbstractEntity
 {
     /**
      * Fixed namespace the path is hashed under, so that reading the same item
