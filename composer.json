@@ -17,6 +17,8 @@
   ],
   "require": {
     "php": ">=8.2",
-    "wexample/symfony-helpers": ">=5.0.0"
+    "wexample/symfony-helpers": ">=5.0.0",
+    "wexample/symfony-api": ">=3.0.0",
+    "symfony/uid": ">=6.2"
   }
 }

@@ -3,3 +3,18 @@ services:
         autowire: true
         autoconfigure: true
         public: false
+
+    Wexample\SymfonyFile\Service\:
+        resource: '../../Service/*'
+
+    Wexample\SymfonyFile\Service\FileSystemItemRepositoryFactory:
+        arguments:
+            $roots: '%wexample_symfony_file.roots%'
+
+    Wexample\SymfonyFile\Api\Controller\:
+        resource: '../../Api/Controller/*'
+        tags: ['controller.service_arguments']
+
+    Wexample\SymfonyFile\Api\Normalizer\:
+        resource: '../../Api/Normalizer/*'
+        tags: ['serializer.normalizer']
