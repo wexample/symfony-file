@@ -1,10 +1,10 @@
 domain: symfony-file.wex
+git:
+  publication_strategy: main_push
 global:
   name: symfony-file
   type: app
-  version: 1.0.0
+  version: 1.0.1
 wex:
   migration: 1
   version: 6.0.133
-git:
-  publication_strategy: main_push

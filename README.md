@@ -1,14 +1,41 @@
 # symfony-file
 
-Version: 1.0.0
+Version: 1.0.1
+
+`wexample/symfony-file` is a Symfony bundle meant to hold the file handling shared across the suite. It currently ships nothing but its own registration: installing it declares the bundle and its extension, which loads src/Resources/config/services.yaml into the container. Services will be added under `src/Service/` as the subject takes shape.
+
+## Installation
+
+```bash
+composer require wexample/symfony-file
+```
+
+Then register the bundle in `config/bundles.php`:
+
+```php
+Wexample\SymfonyFile\WexampleSymfonyFileBundle::class => ['all' => true],
+```
 
 ## Table of Contents
 
+- [Installation](#installation)
+- [Architecture](#architecture)
 - [Integration in the Suite](#integration-in-the-suite)
+- [Dependencies](#dependencies)
 - [Versioning & Compatibility Policy](#versioning--compatibility-policy)
 - [License](#license)
 - [About us](#about-us)
 - [Migration Notes](#migration-notes)
+
+## Architecture
+
+The package holds a single layer for now: the Symfony integration that puts it in the container.
+
+src/WexampleSymfonyFileBundle.php extends `AbstractBundle` from `wexample/symfony-helpers`, which provides the standard bundle wiring — template alias, bundle alias, asset paths.
+
+src/DependencyInjection/WexampleSymfonyFileExtension.php extends `AbstractWexampleSymfonyExtension` and implements `load()` with a single call to `$this->loadConfig(__DIR__, $container)`, which reads src/Resources/config/services.yaml. The parent `prepend()` registers a Doctrine mapping only if a `src/Entity/` directory exists, so no entity configuration is needed until one does.
+
+src/Resources/config/services.yaml declares `_defaults` (`autowire`, `autoconfigure`, `public: false`) and nothing else. The first service directory added to `src/` — `Service/`, `Command/`, `Controller/` — is registered there as a resource glob at the same time it is created: a glob whose directory does not exist makes the container fail to compile.
 
 ## Integration in the Suite
 
@@ -19,6 +46,11 @@ This package is part of the Wexample Suite — a collection of high-quality, mod
 The suite includes packages for configuration management, file handling, prompts, and more. Each package can be used independently or as part of the integrated suite.
 
 Visit the [Wexample Suite documentation](https://docs.wexample.com) for the complete package ecosystem.
+
+## Dependencies
+
+- php: >=8.2
+- wexample/symfony-helpers: >=5.0.0
 
 ## Versioning & Compatibility Policy
 
