@@ -1,0 +1,5 @@
+# DTO / normalizers pour DiskItem
+
+Opened: 2026-09-02
+Parent: caecb2248917
+Author: agent:addon:ai/editor
