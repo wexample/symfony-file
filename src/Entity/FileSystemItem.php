@@ -16,10 +16,16 @@ class FileSystemItem extends AbstractEntity
      */
     public const ID_NAMESPACE = 'a890fa7b-9bf7-4552-b7fe-93f1ca0fbda0';
 
+    protected string $name;
+
     public function __construct(
         protected string $path,
         protected FileSystemItemType $type,
     ) {
+        // Held as a property and not only derived: the exported schema is built
+        // from properties, and the API sends the name on the wire.
+        $this->name = basename($path);
+
         $this->setId(
             Uuid::v5(
                 Uuid::fromString(static::ID_NAMESPACE),
@@ -40,6 +46,6 @@ class FileSystemItem extends AbstractEntity
 
     public function getName(): string
     {
-        return basename($this->path);
+        return $this->name;
     }
 }

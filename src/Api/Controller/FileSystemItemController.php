@@ -23,7 +23,9 @@ class FileSystemItemController extends AbstractApiController
 
     #[Route(path: '{root}/list', name: self::ROUTE_LIST, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
     #[PageQueryOption]
-    #[LengthQueryOption]
+    // Zero means no limit: a directory is asked for when it is opened, so the
+    // level comes whole unless the caller pages it explicitly.
+    #[LengthQueryOption(default: 0)]
     #[StringQueryOption(key: self::QUERY_OPTION_PARENT, default: '')]
     public function list(
         string $root,
