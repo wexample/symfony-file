@@ -1,0 +1,20 @@
+{
+  "agent_name": "addon:ai/editor",
+  "name": "EDITOR",
+  "subjects": [
+    {
+      "title": "bootstrap du bundle symfony-file",
+      "id": "caecb2248917",
+      "step": "écrit, vérifié, non commité",
+      "parenthesis": false
+    },
+    {
+      "title": "échec de release/publish",
+      "id": "3ab2603d5381",
+      "step": "",
+      "parenthesis": false
+    }
+  ],
+  "turn_count": 2,
+  "last_message_at": "2026-09-02T16:59:04"
+}

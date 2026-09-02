@@ -1,0 +1,9 @@
+## Architecture
+
+The package holds a single layer for now: the Symfony integration that puts it in the container.
+
+{{ path("src/WexampleSymfonyFileBundle.php") }} extends `AbstractBundle` from `wexample/symfony-helpers`, which provides the standard bundle wiring — template alias, bundle alias, asset paths.
+
+{{ path("src/DependencyInjection/WexampleSymfonyFileExtension.php") }} extends `AbstractWexampleSymfonyExtension` and implements `load()` with a single call to `$this->loadConfig(__DIR__, $container)`, which reads {{ path("src/Resources/config/services.yaml") }}. The parent `prepend()` registers a Doctrine mapping only if a `src/Entity/` directory exists, so no entity configuration is needed until one does.
+
+{{ path("src/Resources/config/services.yaml") }} declares `_defaults` (`autowire`, `autoconfigure`, `public: false`) and nothing else. The first service directory added to `src/` — `Service/`, `Command/`, `Controller/` — is registered there as a resource glob at the same time it is created: a glob whose directory does not exist makes the container fail to compile.

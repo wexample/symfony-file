@@ -6,3 +6,5 @@ global:
 wex:
   migration: 1
   version: 6.0.133
+git:
+  publication_strategy: main_push
