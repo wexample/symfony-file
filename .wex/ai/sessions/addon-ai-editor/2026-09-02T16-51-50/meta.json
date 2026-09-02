@@ -7,14 +7,8 @@
       "id": "caecb2248917",
       "step": "écrit, vérifié, non commité",
       "parenthesis": false
-    },
-    {
-      "title": "échec de release/publish",
-      "id": "3ab2603d5381",
-      "step": "",
-      "parenthesis": false
     }
   ],
-  "turn_count": 4,
-  "last_message_at": "2026-09-02T17:13:53"
+  "turn_count": 11,
+  "last_message_at": "2026-09-02T20:03:30"
 }

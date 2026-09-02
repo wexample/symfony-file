@@ -6,5 +6,12 @@
   "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/.wex/knowledge/usage/overview.md.j2",
   "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/.wex/knowledge/contributing/architecture.md.j2",
   "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/.gitignore",
-  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/.wex/python/app_manager/app_workdir.py"
+  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/.wex/python/app_manager/app_workdir.py",
+  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/src/DependencyInjection/Configuration.php",
+  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/src/Service/FileSystemItemRepositoryFactory.php",
+  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/src/Entity/Traits/Manipulator/FileSystemItemEntityManipulatorTrait.php",
+  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/src/Api/Dto/PublicFileSystemItemDto.php",
+  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/src/Api/Normalizer/Entity/FileSystemItem/DefaultFileSystemItemNormalizer.php",
+  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/src/Api/Controller/FileSystemItemController.php",
+  "/home/weeger/Desktop/WIP/WEB/WEXAMPLE/PACKAGES/PHP/packages/wexample/symfony-file/src/Resources/config/routes.yaml"
 ]
