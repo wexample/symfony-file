@@ -3,9 +3,11 @@
 namespace Wexample\SymfonyFile\Entity;
 
 use Symfony\Component\Uid\Uuid;
+use Wexample\Pseudocode\Attribute\PseudocodeExport;
 use Wexample\SymfonyFile\Enum\FileSystemItemType;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
+#[PseudocodeExport(inherited: true)]
 class FileSystemItemEntity extends AbstractEntity
 {
     /**
