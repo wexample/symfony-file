@@ -3,9 +3,10 @@
 namespace Wexample\SymfonyFile\Entity;
 
 use Symfony\Component\Uid\Uuid;
+use Wexample\SymfonyFile\Enum\FileSystemItemType;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 
-abstract class AbstractFileSystemItemEntity extends AbstractEntity
+class FileSystemItemEntity extends AbstractEntity
 {
     /**
      * Fixed namespace the path is hashed under, so that reading the same item
@@ -14,7 +15,8 @@ abstract class AbstractFileSystemItemEntity extends AbstractEntity
     public const ID_NAMESPACE = 'a890fa7b-9bf7-4552-b7fe-93f1ca0fbda0';
 
     public function __construct(
-        protected string $path
+        protected string $path,
+        protected FileSystemItemType $type,
     ) {
         $this->setId(
             Uuid::v5(
@@ -27,6 +29,11 @@ abstract class AbstractFileSystemItemEntity extends AbstractEntity
     public function getPath(): string
     {
         return $this->path;
+    }
+
+    public function getType(): FileSystemItemType
+    {
+        return $this->type;
     }
 
     public function getName(): string
