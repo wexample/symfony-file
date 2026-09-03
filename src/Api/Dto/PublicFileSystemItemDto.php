@@ -2,6 +2,7 @@
 
 namespace Wexample\SymfonyFile\Api\Dto;
 
+use DateTimeInterface;
 use Wexample\SymfonyApi\Api\Dto\AbstractEntityDto;
 use Wexample\SymfonyFile\Entity\FileSystemItem;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
@@ -16,6 +17,12 @@ class PublicFileSystemItemDto extends AbstractEntityDto
 
     public bool $hasChildren;
 
+    public int $size;
+
+    public ?string $modifiedAt;
+
+    public string $permissions;
+
     /**
      * @param FileSystemItem $entity
      */
@@ -27,6 +34,9 @@ class PublicFileSystemItemDto extends AbstractEntityDto
         $dto->name = $entity->getName();
         $dto->type = $entity->getType()->value;
         $dto->hasChildren = $entity->hasChildren();
+        $dto->size = $entity->getSize();
+        $dto->modifiedAt = $entity->getModifiedAt()?->format(DateTimeInterface::ATOM);
+        $dto->permissions = $entity->getPermissions();
 
         return $dto;
     }

@@ -18,3 +18,7 @@ services:
     Wexample\SymfonyFile\Api\Normalizer\:
         resource: '../../Api/Normalizer/*'
         tags: ['serializer.normalizer']
+
+    Wexample\SymfonyFile\Twig\:
+        resource: '../../Twig/*'
+        tags: ['twig.extension']

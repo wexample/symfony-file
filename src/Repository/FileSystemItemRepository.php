@@ -2,6 +2,7 @@
 
 namespace Wexample\SymfonyFile\Repository;
 
+use DateTimeImmutable;
 use Doctrine\Persistence\ObjectRepository;
 use Symfony\Component\Uid\Uuid;
 use UnexpectedValueException;
@@ -93,10 +94,17 @@ class FileSystemItemRepository implements ObjectRepository
 
     private function createItem(string $absolutePath): FileSystemItem
     {
+        $stat = stat($absolutePath);
+
         return new FileSystemItem(
             $this->toRelativePath($absolutePath),
             FileSystemItemType::fromPath($absolutePath),
-            $this->hasEntries($absolutePath)
+            $this->hasEntries($absolutePath),
+            $stat['size'],
+            (new DateTimeImmutable())->setTimestamp($stat['mtime']),
+            // The low twelve bits of the mode are the permissions, the rest says
+            // what kind of node it is, which the type already tells.
+            sprintf('%04o', $stat['mode'] & 07777)
         );
     }
 
