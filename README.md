@@ -1,6 +1,6 @@
 # symfony-file
 
-Version: 1.0.1
+Version: 2.0.0
 
 `wexample/symfony-file` is a Symfony bundle meant to hold the file handling shared across the suite. It currently ships nothing but its own registration: installing it declares the bundle and its extension, which loads src/Resources/config/services.yaml into the container. Services will be added under `src/Service/` as the subject takes shape.
 
@@ -50,7 +50,11 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 ## Dependencies
 
 - php: >=8.2
-- wexample/symfony-helpers: >=5.0.0
+- wexample/symfony-helpers: >=6.0.0
+- wexample/symfony-api: >=4.0.0
+- wexample/php-pseudocode: >=1.0.0
+- wexample/symfony-pseudocode: >=2.0.0
+- symfony/uid: >=6.2
 
 ## Versioning & Compatibility Policy
 

@@ -103,7 +103,7 @@ class FileSystemItemRepository implements ObjectRepository
         if (array_key_exists(static::CRITERIA_PARENT, $criteria)) {
             $parent = $this->toContainedAbsolutePath($criteria[static::CRITERIA_PARENT]);
 
-            if (null === $parent || !is_dir($parent)) {
+            if (null === $parent || ! is_dir($parent)) {
                 return [];
             }
 
