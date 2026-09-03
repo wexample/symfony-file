@@ -21,11 +21,14 @@ class FileSystemItemController extends AbstractApiController
 
     final public const QUERY_OPTION_PARENT = 'parent';
 
+    final public const LIST_PAGE_LENGTH = 1000;
+
     #[Route(path: '{root}/list', name: self::ROUTE_LIST, methods: AbstractController::ROUTE_OPTIONS_METHOD_ONLY_GET, options: AbstractController::ROUTE_OPTIONS_ONLY_EXPOSE)]
     #[PageQueryOption]
-    // Zero means no limit: a directory is asked for when it is opened, so the
-    // level comes whole unless the caller pages it explicitly.
-    #[LengthQueryOption(default: 0)]
+    // A level comes whole in practice, and the cap is there for the ones nobody
+    // wrote by hand: a node_modules must not be scanned, serialised and sent in
+    // one piece just because someone opened it.
+    #[LengthQueryOption(default: self::LIST_PAGE_LENGTH)]
     #[StringQueryOption(key: self::QUERY_OPTION_PARENT, default: '')]
     public function list(
         string $root,
@@ -39,21 +42,26 @@ class FileSystemItemController extends AbstractApiController
             throw $this->createNotFoundException('Unknown file system root: '.$root);
         }
 
-        // The directory is never counted: a listing must stay affordable on a
-        // node_modules, so the client gets a prev/next pager instead of a total.
-        $pagination = self::getQueryOptionPagination($request);
+        $criteria = [
+            FileSystemItemRepository::CRITERIA_PARENT => self::getQueryOptionValue(
+                $request,
+                self::QUERY_OPTION_PARENT,
+                ''
+            ),
+        ];
+
+        // Counted, because a level silently cut in half is worse than the read it
+        // costs: the client needs the total to offer the rest.
+        $pagination = self::getQueryOptionPagination(
+            $request,
+            $repository->countBy($criteria)
+        );
 
         return self::apiResponsePaginated(
             pagination: $pagination,
             items: $normalizer->normalizeCollection(
                 $repository->findBy(
-                    criteria: [
-                        FileSystemItemRepository::CRITERIA_PARENT => self::getQueryOptionValue(
-                            $request,
-                            self::QUERY_OPTION_PARENT,
-                            ''
-                        ),
-                    ],
+                    criteria: $criteria,
                     limit: $pagination->length,
                     offset: $pagination->getOffset()
                 )

@@ -81,12 +81,53 @@ class FileSystemItemRepository implements ObjectRepository
         ]);
     }
 
+    /**
+     * How many items the criteria hold, which a listing needs in order to say it
+     * was cut short. The directory is read a second time rather than carried
+     * along with the page, and that second read lands on a warm cache.
+     */
+    public function countBy(array $criteria): int
+    {
+        return count($this->resolveCriteriaPaths($criteria));
+    }
+
     private function createItem(string $absolutePath): FileSystemItem
     {
         return new FileSystemItem(
             $this->toRelativePath($absolutePath),
-            FileSystemItemType::fromPath($absolutePath)
+            FileSystemItemType::fromPath($absolutePath),
+            $this->hasEntries($absolutePath)
         );
+    }
+
+    /**
+     * Whether a directory holds anything, told by opening it and stopping at the
+     * first entry. Counting would cost the whole listing for an answer nothing
+     * displays.
+     */
+    private function hasEntries(string $absolutePath): bool
+    {
+        if (! is_dir($absolutePath)) {
+            return false;
+        }
+
+        $handle = opendir($absolutePath);
+
+        if (false === $handle) {
+            return false;
+        }
+
+        try {
+            while (false !== ($entry = readdir($handle))) {
+                if ('.' !== $entry && '..' !== $entry) {
+                    return true;
+                }
+            }
+        } finally {
+            closedir($handle);
+        }
+
+        return false;
     }
 
     /**

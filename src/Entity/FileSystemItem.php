@@ -21,6 +21,12 @@ class FileSystemItem extends AbstractEntity
     public function __construct(
         protected string $path,
         protected FileSystemItemType $type,
+        /**
+         * Whether the item opens onto something. Carried rather than deduced, so
+         * that a tree knows not to draw a chevron on an empty directory without
+         * having to list it first.
+         */
+        protected bool $hasChildren = false,
     ) {
         // Held as a property and not only derived: the exported schema is built
         // from properties, and the API sends the name on the wire.
@@ -47,5 +53,10 @@ class FileSystemItem extends AbstractEntity
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function hasChildren(): bool
+    {
+        return $this->hasChildren;
     }
 }

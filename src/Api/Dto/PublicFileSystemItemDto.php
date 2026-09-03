@@ -14,6 +14,8 @@ class PublicFileSystemItemDto extends AbstractEntityDto
 
     public string $type;
 
+    public bool $hasChildren;
+
     /**
      * @param FileSystemItem $entity
      */
@@ -24,6 +26,7 @@ class PublicFileSystemItemDto extends AbstractEntityDto
         $dto->path = $entity->getPath();
         $dto->name = $entity->getName();
         $dto->type = $entity->getType()->value;
+        $dto->hasChildren = $entity->hasChildren();
 
         return $dto;
     }
