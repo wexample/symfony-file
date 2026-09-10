@@ -16,11 +16,16 @@
     }
   ],
   "require": {
-    "php": ">=8.2",
+    "php": ">=8.5",
     "wexample/symfony-helpers": ">=7.0.0",
     "wexample/symfony-api": ">=4.0.0",
     "wexample/php-pseudocode": ">=1.0.0",
     "wexample/symfony-pseudocode": ">=2.0.0",
     "symfony/uid": ">=6.2"
+  },
+  "extra": {
+    "install": {
+      "bundle_env": "all"
+    }
   }
 }
