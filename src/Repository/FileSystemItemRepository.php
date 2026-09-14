@@ -150,7 +150,7 @@ class FileSystemItemRepository implements ObjectRepository
     private function resolveCriteriaPaths(array $criteria): array
     {
         if (array_key_exists(static::CRITERIA_PATH, $criteria)) {
-            $path = $this->toContainedAbsolutePath($criteria[static::CRITERIA_PATH]);
+            $path = $this->toContainedEntryPath($criteria[static::CRITERIA_PATH]);
 
             return null !== $path ? [$path] : [];
         }
@@ -174,6 +174,30 @@ class FileSystemItemRepository implements ObjectRepository
             'A file system item is looked up by '
             .static::CRITERIA_PATH.' or '.static::CRITERIA_PARENT.'.'
         );
+    }
+
+    /**
+     * One entry of the tree, which is not the same question as a directory to
+     * read into.
+     *
+     * The entry is not followed: a link belongs to the directory holding it, so
+     * it is described where it lies rather than refused for where it points —
+     * and a transcript linked into another container has no other answer. What
+     * holds it is resolved as ever, so a traversal is caught exactly as before,
+     * and reading *inside* a link leading out still lands on `toContainedAbsolutePath`
+     * and is still refused.
+     */
+    private function toContainedEntryPath(string $relativePath): ?string
+    {
+        $directory = $this->toContainedAbsolutePath(dirname($relativePath));
+
+        if (null === $directory) {
+            return null;
+        }
+
+        $path = $directory.DIRECTORY_SEPARATOR.basename($relativePath);
+
+        return is_link($path) || file_exists($path) ? $path : null;
     }
 
     /**
