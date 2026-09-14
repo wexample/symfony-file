@@ -94,7 +94,13 @@ class FileSystemItemRepository implements ObjectRepository
 
     private function createItem(string $absolutePath): FileSystemItem
     {
-        $stat = stat($absolutePath);
+        // A link is described by what it is rather than by what it points at,
+        // which is what the type already says of it. It is also the only thing
+        // left to say when the target is out of reach — a listing dies on
+        // `stat` there, and a directory holding one such entry shows nothing.
+        $stat = is_link($absolutePath)
+            ? lstat($absolutePath)
+            : stat($absolutePath);
 
         return new FileSystemItem(
             $this->toRelativePath($absolutePath),
