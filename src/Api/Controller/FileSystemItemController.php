@@ -10,8 +10,8 @@ use Wexample\SymfonyApi\Api\Attribute\QueryOption\StringQueryOption;
 use Wexample\SymfonyApi\Api\Class\ApiResponse;
 use Wexample\SymfonyApi\Api\Controller\AbstractApiController;
 use Wexample\SymfonyFile\Api\Normalizer\Entity\FileSystemItem\DefaultFileSystemItemNormalizer;
-use Wexample\SymfonyFile\Repository\FileSystemItemRepository;
-use Wexample\SymfonyFile\Service\FileSystemItemRepositoryFactory;
+use Wexample\SymfonyFile\Service\FileSystemItemIndexer;
+use Wexample\SymfonyFile\Service\FileSystemItemScannerFactory;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
 
 #[Route(path: 'api/file-system-item/', name: 'api_file_system_item_')]
@@ -33,38 +33,34 @@ class FileSystemItemController extends AbstractApiController
     public function list(
         string $root,
         Request $request,
-        FileSystemItemRepositoryFactory $repositoryFactory,
+        FileSystemItemScannerFactory $scannerFactory,
+        FileSystemItemIndexer $indexer,
         DefaultFileSystemItemNormalizer $normalizer,
     ): ApiResponse {
-        $repository = $repositoryFactory->getRepository($root);
+        $scanner = $scannerFactory->getScanner($root);
 
-        if (null === $repository) {
+        if (null === $scanner) {
             throw $this->createNotFoundException('Unknown file system root: '.$root);
         }
 
-        $criteria = [
-            FileSystemItemRepository::CRITERIA_PARENT => self::getQueryOptionValue(
-                $request,
-                self::QUERY_OPTION_PARENT,
-                ''
-            ),
-        ];
+        $parent = self::getQueryOptionValue(
+            $request,
+            self::QUERY_OPTION_PARENT,
+            ''
+        );
+
+        // Read from the disk the first time this level is asked for, and from
+        // the index every time after.
+        $items = $indexer->level($scanner, $parent);
 
         // Counted, because a level silently cut in half is worse than the read it
         // costs: the client needs the total to offer the rest.
-        $pagination = self::getQueryOptionPagination(
-            $request,
-            $repository->countBy($criteria)
-        );
+        $pagination = self::getQueryOptionPagination($request, count($items));
 
         return self::apiResponsePaginated(
             pagination: $pagination,
             items: $normalizer->normalizeCollection(
-                $repository->findBy(
-                    criteria: $criteria,
-                    limit: $pagination->length,
-                    offset: $pagination->getOffset()
-                )
+                array_slice($items, $pagination->getOffset(), $pagination->length)
             )
         );
     }

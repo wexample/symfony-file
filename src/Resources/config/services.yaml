@@ -4,10 +4,10 @@ services:
         autoconfigure: true
         public: false
 
-    Wexample\SymfonyFile\Service\:
-        resource: '../../Service/*'
+    Wexample\SymfonyFile\:
+        resource: '../../{Repository,Service}'
 
-    Wexample\SymfonyFile\Service\FileSystemItemRepositoryFactory:
+    Wexample\SymfonyFile\Service\FileSystemItemScannerFactory:
         arguments:
             $roots: '%wexample_symfony_file.roots%'
 
