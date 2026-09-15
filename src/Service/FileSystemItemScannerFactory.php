@@ -2,7 +2,7 @@
 
 namespace Wexample\SymfonyFile\Service;
 
-use Wexample\PhpFile\FileSystemItemScanner;
+use Wexample\PhpFile\Class\FileSystemItemScanner;
 
 /**
  * Hands out a reader for each tree the application declared.

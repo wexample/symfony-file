@@ -1,8 +1,8 @@
 # symfony-file
 
-Version: 3.0.0
+Version: 3.1.0
 
-`wexample/symfony-file` is a Symfony bundle meant to hold the file handling shared across the suite. It currently ships nothing but its own registration: installing it declares the bundle and its extension, which loads src/Resources/config/services.yaml into the container. Services will be added under `src/Service/` as the subject takes shape.
+`wexample/symfony-file` is the Symfony side of the suite's file handling: it indexes a tree into a table, serves one level of it over an API, and prints a size in a template. Everything that owes nothing to the framework — reading the disk, matching paths, formatting bytes — lives in ../php-file, which this bundle requires.
 
 ## Installation
 
@@ -16,12 +16,61 @@ Then register the bundle in `config/bundles.php`:
 Wexample\SymfonyFile\WexampleSymfonyFileBundle::class => ['all' => true],
 ```
 
+## Declaring the trees it serves
+
+A root is a name and an absolute path. Nothing is served that was not named:
+
+```yaml
+# config/packages/wexample_symfony_file.yaml
+wexample_symfony_file:
+    roots:
+        project: '%kernel.project_dir%'
+        uploads: '%kernel.project_dir%/var/uploads'
+```
+
+The default is the one root above, `project`. src/Service/FileSystemItemScannerFactory.php hands out a scanner per name and answers null for anything else — an application serving trees it only discovers at runtime builds its own scanner instead of asking here.
+
+## Reading a level
+
+```
+GET /api/file-system-item/{root}/list?parent=src&page=1&length=1000
+```
+
+src/Api/Controller/FileSystemItemController.php answers one directory, paginated. The level is read from the disk the first time it is asked for and from the table every time after — see src/Service/FileSystemItemIndexer.php. The `length` cap is there for the levels nobody wrote by hand: a `node_modules` must not be scanned, serialised and sent in one piece because someone opened it.
+
+## In a service
+
+```php
+use Wexample\SymfonyFile\Service\FileSystemItemIndexer;
+use Wexample\SymfonyFile\Service\FileSystemItemScannerFactory;
+
+$scanner = $scannerFactory->getScanner('project');
+
+$items = $indexer->level($scanner, 'src');   // one directory
+$item  = $indexer->one($scanner, 'src/Kernel.php');
+$total = $indexer->sweep($scanner);          // the whole tree, in batches
+```
+
+`sweep()` is what makes a question crossing the tree — a search, a selection, a sort — answerable without opening every directory first. It drops what it held for that root and writes it all back, since a file that is gone leaves no trace to find.
+
+## In a template
+
+```twig
+{{ item.size|file_size }}   {# 1536 → 1.5 KB #}
+```
+
+The filter is registered by src/Twig/FileSizeExtension.php and does nothing but call `FileSizeHelper::format()` from ../php-file.
+
 ## Table of Contents
 
 - [Installation](#installation)
+- [Declaring the trees it serves](#declaring-the-trees-it-serves)
+- [Reading a level](#reading-a-level)
+- [In a service](#in-a-service)
+- [In a template](#in-a-template)
 - [Architecture](#architecture)
-- [Integration in the Suite](#integration-in-the-suite)
 - [Dependencies](#dependencies)
+- [Integration in the Suite](#integration-in-the-suite)
 - [Versioning & Compatibility Policy](#versioning--compatibility-policy)
 - [License](#license)
 - [About us](#about-us)
@@ -29,13 +78,31 @@ Wexample\SymfonyFile\WexampleSymfonyFileBundle::class => ['all' => true],
 
 ## Architecture
 
-The package holds a single layer for now: the Symfony integration that puts it in the container.
+The line that decides where a file goes runs between this package and ../php-file: reading the disk, matching paths and formatting sizes need no framework and live there; a container, an entity manager, a controller or a Twig environment is what makes something belong here. Nothing in `src/` reimplements what the other package already answers.
 
-src/WexampleSymfonyFileBundle.php extends `AbstractBundle` from `wexample/symfony-helpers`, which provides the standard bundle wiring — template alias, bundle alias, asset paths.
+### The layers
 
-src/DependencyInjection/WexampleSymfonyFileExtension.php extends `AbstractWexampleSymfonyExtension` and implements `load()` with a single call to `$this->loadConfig(__DIR__, $container)`, which reads src/Resources/config/services.yaml. The parent `prepend()` registers a Doctrine mapping only if a `src/Entity/` directory exists, so no entity configuration is needed until one does.
+src/WexampleSymfonyFileBundle.php extends `AbstractBundle` from `wexample/symfony-helpers` — template alias, bundle alias, asset paths.
 
-src/Resources/config/services.yaml declares `_defaults` (`autowire`, `autoconfigure`, `public: false`) and nothing else. The first service directory added to `src/` — `Service/`, `Command/`, `Controller/` — is registered there as a resource glob at the same time it is created: a glob whose directory does not exist makes the container fail to compile.
+src/DependencyInjection/WexampleSymfonyFileExtension.php loads src/Resources/config/services.yaml and sets one parameter, `wexample_symfony_file.roots`, from src/DependencyInjection/Configuration.php. That parameter is injected into src/Service/FileSystemItemScannerFactory.php and read nowhere else.
+
+src/Entity/FileSystemItem.php is one entry of a tree as it stood when it was last read. The disk owns the truth and the row is an index of it — nothing is ever written back from here. Identity is `Uuid::v5` over the root *and* the path inside it, because the same relative path exists in every app.
+
+src/Service/FileSystemItemIndexer.php keeps the table in step with the disk. src/Service/FileSystemItemHydrator.php translates one scanned entry into its row and knows nothing of where the values came from.
+
+src/Api/Controller/FileSystemItemController.php serves one level, paginated, through the normalizer in `src/Api/Normalizer/`. src/Twig/FileSizeExtension.php registers the `file_size` filter.
+
+### Why an index rather than a watcher
+
+A level is read from the disk the first time somebody opens it and from the table afterwards, and `childrenScannedAt` being null is the whole of the invalidation. It costs nothing to arrange, because the explorer already asks for one directory at a time: the laziness that was there for the browser is the one that indexes.
+
+A watcher was not chosen on purpose. A `git checkout` replaces hundreds of files without a single usable event — an index that re-reads absorbs that, where a watcher would produce noise.
+
+`sweep()` drops the root's rows and writes them all back in batches rather than reconciling: a file that is gone leaves no trace to find, and telling which rows those are costs more than writing them all.
+
+### Adding to the container
+
+src/Resources/config/services.yaml registers `Repository` and `Service` as a resource glob, controllers and normalizers by tag, `Twig/` as extensions. A glob whose directory does not exist makes the container fail to compile, so a new directory under `src/` is declared there at the moment it is created.
 
 ## Integration in the Suite
 
@@ -49,7 +116,8 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 
 ## Dependencies
 
-- php: >=8.2
+- php: >=8.5
+- wexample/php-file: >=1.1.0
 - wexample/symfony-helpers: >=7.0.0
 - wexample/symfony-api: >=4.0.0
 - wexample/php-pseudocode: >=1.0.0

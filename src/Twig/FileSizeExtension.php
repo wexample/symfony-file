@@ -4,7 +4,7 @@ namespace Wexample\SymfonyFile\Twig;
 
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFilter;
-use Wexample\SymfonyHelpers\Helper\FileHelper;
+use Wexample\PhpFile\Helper\FileSizeHelper;
 
 class FileSizeExtension extends AbstractExtension
 {
@@ -13,7 +13,7 @@ class FileSizeExtension extends AbstractExtension
         return [
             new TwigFilter(
                 'file_size',
-                FileHelper::formatBytes(...)
+                FileSizeHelper::format(...)
             ),
         ];
     }

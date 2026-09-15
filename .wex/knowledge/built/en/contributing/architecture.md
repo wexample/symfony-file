@@ -1,9 +1,27 @@
 ## Architecture
 
-The package holds a single layer for now: the Symfony integration that puts it in the container.
+The line that decides where a file goes runs between this package and ../php-file: reading the disk, matching paths and formatting sizes need no framework and live there; a container, an entity manager, a controller or a Twig environment is what makes something belong here. Nothing in `src/` reimplements what the other package already answers.
 
-src/WexampleSymfonyFileBundle.php extends `AbstractBundle` from `wexample/symfony-helpers`, which provides the standard bundle wiring — template alias, bundle alias, asset paths.
+### The layers
 
-src/DependencyInjection/WexampleSymfonyFileExtension.php extends `AbstractWexampleSymfonyExtension` and implements `load()` with a single call to `$this->loadConfig(__DIR__, $container)`, which reads src/Resources/config/services.yaml. The parent `prepend()` registers a Doctrine mapping only if a `src/Entity/` directory exists, so no entity configuration is needed until one does.
+src/WexampleSymfonyFileBundle.php extends `AbstractBundle` from `wexample/symfony-helpers` — template alias, bundle alias, asset paths.
 
-src/Resources/config/services.yaml declares `_defaults` (`autowire`, `autoconfigure`, `public: false`) and nothing else. The first service directory added to `src/` — `Service/`, `Command/`, `Controller/` — is registered there as a resource glob at the same time it is created: a glob whose directory does not exist makes the container fail to compile.
+src/DependencyInjection/WexampleSymfonyFileExtension.php loads src/Resources/config/services.yaml and sets one parameter, `wexample_symfony_file.roots`, from src/DependencyInjection/Configuration.php. That parameter is injected into src/Service/FileSystemItemScannerFactory.php and read nowhere else.
+
+src/Entity/FileSystemItem.php is one entry of a tree as it stood when it was last read. The disk owns the truth and the row is an index of it — nothing is ever written back from here. Identity is `Uuid::v5` over the root *and* the path inside it, because the same relative path exists in every app.
+
+src/Service/FileSystemItemIndexer.php keeps the table in step with the disk. src/Service/FileSystemItemHydrator.php translates one scanned entry into its row and knows nothing of where the values came from.
+
+src/Api/Controller/FileSystemItemController.php serves one level, paginated, through the normalizer in `src/Api/Normalizer/`. src/Twig/FileSizeExtension.php registers the `file_size` filter.
+
+### Why an index rather than a watcher
+
+A level is read from the disk the first time somebody opens it and from the table afterwards, and `childrenScannedAt` being null is the whole of the invalidation. It costs nothing to arrange, because the explorer already asks for one directory at a time: the laziness that was there for the browser is the one that indexes.
+
+A watcher was not chosen on purpose. A `git checkout` replaces hundreds of files without a single usable event — an index that re-reads absorbs that, where a watcher would produce noise.
+
+`sweep()` drops the root's rows and writes them all back in batches rather than reconciling: a file that is gone leaves no trace to find, and telling which rows those are costs more than writing them all.
+
+### Adding to the container
+
+src/Resources/config/services.yaml registers `Repository` and `Service` as a resource glob, controllers and normalizers by tag, `Twig/` as extensions. A glob whose directory does not exist makes the container fail to compile, so a new directory under `src/` is declared there at the moment it is created.
