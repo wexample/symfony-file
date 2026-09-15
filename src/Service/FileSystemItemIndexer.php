@@ -22,6 +22,9 @@ use Wexample\SymfonyFile\Repository\FileSystemItemRepository;
  */
 final readonly class FileSystemItemIndexer
 {
+    /** How many rows a sweep holds before writing them. */
+    private const int BATCH_SIZE = 2000;
+
     public function __construct(
         private FileSystemItemRepository $items,
         private FileSystemItemHydrator $hydrator,
@@ -46,6 +49,121 @@ final readonly class FileSystemItemIndexer
         }
 
         return $this->items->findLevel($root, $parent);
+    }
+
+    /**
+     * Reads a whole tree, level by level, and forgets whatever it held before.
+     *
+     * Dropping first rather than reconciling: a file that is gone leaves no
+     * trace to find, and telling which rows those are costs more than writing
+     * them all back. What this buys over indexing on demand is completeness —
+     * a question crossing the tree, a search or a selection, can be answered
+     * without opening every directory first.
+     *
+     * @return int how many entries the tree holds
+     */
+    public function sweep(FileSystemItemScanner $scanner): int
+    {
+        $root = $scanner->getAbsoluteRootPath();
+
+        $this->items->removeRoot($root);
+
+        // The root stands for itself, and is the only entry nothing else opens:
+        // every other directory is written as an entry of the level above it.
+        $rows = [
+            $this->row($root, '', '', [
+                FileSystemItemScanner::KEY_NAME => '',
+                FileSystemItemScanner::KEY_TYPE => FileSystemItemType::DIRECTORY,
+                FileSystemItemScanner::KEY_HAS_CHILDREN => true,
+                FileSystemItemScanner::KEY_SIZE => 0,
+                FileSystemItemScanner::KEY_MODIFIED_AT => time(),
+                FileSystemItemScanner::KEY_PERMISSIONS => '',
+            ]),
+        ];
+
+        $count = $this->sweepLevel($scanner, $root, '', $rows);
+
+        $this->items->insertMany($rows);
+
+        return $count;
+    }
+
+    /**
+     * One level and everything under it, collecting rows as it goes.
+     *
+     * Written in batches rather than one by one: the cost of a sweep is the
+     * round trip to the database, and a tree runs to tens of thousands of
+     * entries.
+     *
+     * Recursive rather than a queue: a tree is as deep as a filesystem lets a
+     * path be, which no stack has ever minded.
+     *
+     * @param array<int, array<string, mixed>> $rows
+     */
+    private function sweepLevel(
+        FileSystemItemScanner $scanner,
+        string $root,
+        string $parent,
+        array &$rows,
+    ): int {
+        $level = $scanner->scanLevel($parent);
+        $count = count($level);
+        $directories = [];
+
+        foreach ($level as $values) {
+            $path = $values[FileSystemItemScanner::KEY_PATH];
+
+            $rows[] = $this->row($root, $path, $parent, $values);
+
+            // A link is not followed: it was described where it lies, and
+            // walking into one leading out of the root would index another tree.
+            if (FileSystemItemType::DIRECTORY === $values[FileSystemItemScanner::KEY_TYPE]) {
+                $directories[] = $path;
+            }
+        }
+
+        if (count($rows) >= self::BATCH_SIZE) {
+            $this->items->insertMany($rows);
+            $rows = [];
+        }
+
+        foreach ($directories as $path) {
+            $count += $this->sweepLevel($scanner, $root, $path, $rows);
+        }
+
+        return $count;
+    }
+
+    /**
+     * What one entry is, as columns rather than as an entity.
+     *
+     * @param array<string, mixed> $values
+     *
+     * @return array<string, mixed>
+     */
+    private function row(
+        string $root,
+        string $path,
+        string $parent,
+        array $values,
+    ): array {
+        $isDirectory = FileSystemItemType::DIRECTORY === $values[FileSystemItemScanner::KEY_TYPE];
+
+        return [
+            'id' => FileSystemItem::idFor($root, $path)->toRfc4122(),
+            'root' => $root,
+            'path' => $path,
+            'name' => $values[FileSystemItemScanner::KEY_NAME],
+            'parent' => $parent,
+            'type' => $values[FileSystemItemScanner::KEY_TYPE]->value,
+            'has_children' => (bool) $values[FileSystemItemScanner::KEY_HAS_CHILDREN],
+            'size' => (int) $values[FileSystemItemScanner::KEY_SIZE],
+            'modified_at' => date('Y-m-d H:i:s', $values[FileSystemItemScanner::KEY_MODIFIED_AT]),
+            'permissions' => $values[FileSystemItemScanner::KEY_PERMISSIONS],
+            // A sweep reads every level, so every directory it wrote is read:
+            // saying so here is what tells a later opening not to go to the disk.
+            'children_scanned_at' => $isDirectory ? date('Y-m-d H:i:s') : null,
+        ];
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace Wexample\SymfonyFile\Repository;
 
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\QueryBuilder;
 use Wexample\SymfonyFile\Entity\FileSystemItem;
 use Wexample\SymfonyFile\Entity\Traits\Manipulator\FileSystemItemManipulatorTrait;
@@ -76,6 +77,65 @@ class FileSystemItemRepository extends AbstractRepository
             ->setParameter('root', $root)
             ->getQuery()
             ->execute();
+    }
+
+    /**
+     * Writes rows straight through, without making an entity of each.
+     *
+     * A sweep reads tens of thousands of entries, and the identity map alone
+     * would exhaust the memory before the walk ends: a row is what the disk
+     * said, it is inserted and forgotten.
+     *
+     * The values are written into the statement rather than bound to it. Two
+     * reasons, both about scale: a multi-row insert of this width would bind
+     * hundreds of thousands of parameters, and in development every one of them
+     * is kept with a clone of the statement — the sweep then dies of what was
+     * collected about it rather than of what it did.
+     *
+     * @param array<int, array<string, mixed>> $rows columns indexed by name
+     */
+    public function insertMany(array $rows): void
+    {
+        if (! $rows) {
+            return;
+        }
+
+        $connection = $this->getEntityManager()->getConnection();
+        $columns = array_keys($rows[0]);
+        $tuples = [];
+
+        foreach ($rows as $row) {
+            $values = [];
+
+            foreach ($columns as $column) {
+                $values[] = $this->literal($connection, $row[$column]);
+            }
+
+            $tuples[] = '('.implode(',', $values).')';
+        }
+
+        $connection->executeStatement(
+            'INSERT INTO file_system_item ('.implode(',', $columns).') VALUES '
+            .implode(',', $tuples)
+        );
+    }
+
+    /**
+     * One value, as the statement spells it.
+     *
+     * Quoting is the connection's, which is the only thing that knows how this
+     * database escapes: nothing here builds a string by hand.
+     */
+    private function literal(
+        Connection $connection,
+        mixed $value,
+    ): string {
+        return match (true) {
+            null === $value => 'NULL',
+            is_bool($value) => $value ? 'true' : 'false',
+            is_int($value) => (string) $value,
+            default => $connection->quote((string) $value),
+        };
     }
 
     private function queryLevel(
