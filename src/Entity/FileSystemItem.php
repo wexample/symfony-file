@@ -7,7 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 use Wexample\Pseudocode\Attribute\PseudocodeExport;
-use Wexample\SymfonyFile\Enum\FileSystemItemType;
+use Wexample\PhpFile\Enum\FileSystemItemType;
 use Wexample\SymfonyFile\Repository\FileSystemItemRepository;
 use Wexample\SymfonyHelpers\Entity\AbstractEntity;
 

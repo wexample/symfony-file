@@ -3,6 +3,7 @@
 namespace Wexample\SymfonyFile\Service;
 
 use DateTimeImmutable;
+use Wexample\PhpFile\FileSystemItemScanner;
 use Wexample\SymfonyFile\Entity\FileSystemItem;
 
 /**

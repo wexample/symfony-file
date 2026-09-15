@@ -4,8 +4,9 @@ namespace Wexample\SymfonyFile\Service;
 
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Wexample\PhpFile\Enum\FileSystemItemType;
+use Wexample\PhpFile\FileSystemItemScanner;
 use Wexample\SymfonyFile\Entity\FileSystemItem;
-use Wexample\SymfonyFile\Enum\FileSystemItemType;
 use Wexample\SymfonyFile\Repository\FileSystemItemRepository;
 
 /**
