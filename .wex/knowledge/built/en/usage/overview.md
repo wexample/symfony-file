@@ -52,7 +52,7 @@ $total = $indexer->sweep($scanner);          // the whole tree, in batches
 ## In a template
 
 ```twig
-{{ item.size|file_size }}   {# 1536 → 1.5 KB #}
+{{ item.size|file_size }}   
 ```
 
 The filter is registered by src/Twig/FileSizeExtension.php and does nothing but call `FileSizeHelper::format()` from ../php-file.

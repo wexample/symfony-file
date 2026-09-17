@@ -1,6 +1,6 @@
 # symfony-file
 
-Version: 3.1.0
+Version: 4.0.0
 
 `wexample/symfony-file` is the Symfony side of the suite's file handling: it indexes a tree into a table, serves one level of it over an API, and prints a size in a template. Everything that owes nothing to the framework — reading the disk, matching paths, formatting bytes — lives in ../php-file, which this bundle requires.
 
@@ -56,7 +56,7 @@ $total = $indexer->sweep($scanner);          // the whole tree, in batches
 ## In a template
 
 ```twig
-{{ item.size|file_size }}   {# 1536 → 1.5 KB #}
+{{ item.size|file_size }}   
 ```
 
 The filter is registered by src/Twig/FileSizeExtension.php and does nothing but call `FileSizeHelper::format()` from ../php-file.
@@ -69,8 +69,8 @@ The filter is registered by src/Twig/FileSizeExtension.php and does nothing but 
 - [In a service](#in-a-service)
 - [In a template](#in-a-template)
 - [Architecture](#architecture)
-- [Dependencies](#dependencies)
 - [Integration in the Suite](#integration-in-the-suite)
+- [Dependencies](#dependencies)
 - [Versioning & Compatibility Policy](#versioning--compatibility-policy)
 - [License](#license)
 - [About us](#about-us)
@@ -117,11 +117,11 @@ Visit the [Wexample Suite documentation](https://docs.wexample.com) for the comp
 ## Dependencies
 
 - php: >=8.5
-- wexample/php-file: >=1.1.0
-- wexample/symfony-helpers: >=7.0.0
-- wexample/symfony-api: >=4.0.0
+- wexample/php-file: >=2.0.0
+- wexample/symfony-helpers: >=8.0.0
+- wexample/symfony-api: >=5.0.0
 - wexample/php-pseudocode: >=1.0.0
-- wexample/symfony-pseudocode: >=2.0.0
+- wexample/symfony-pseudocode: >=3.0.0
 - symfony/uid: >=6.2
 
 ## Versioning & Compatibility Policy
