@@ -1,6 +1,6 @@
 # symfony-file
 
-Version: 4.0.15
+Version: 4.0.16
 
 `wexample/symfony-file` is the Symfony side of the suite's file handling: it indexes a tree into a table, serves one level of it over an API, and prints a size in a template. Everything that owes nothing to the framework — reading the disk, matching paths, formatting bytes — lives in ../php-file, which this bundle requires.
 
@@ -116,7 +116,7 @@ The suite includes packages for configuration management, file handling, prompts
 
 - php: >=8.5
 - wexample/php-file: >=2.0.0
-- wexample/symfony-helpers: >=17.0.0
+- wexample/symfony-helpers: >=18.0.0
 - wexample/symfony-api: >=14.0.0
 - wexample/php-pseudocode: >=2.2.0
 - wexample/symfony-pseudocode: >=4.0.0
