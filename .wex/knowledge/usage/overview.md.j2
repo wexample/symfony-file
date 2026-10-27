@@ -29,7 +29,7 @@ The default is the one root above, `project`. {{ path("src/Service/FileSystemIte
 ## Reading a level
 
 ```
-GET /api/file-system-item/{root}/list?parent=src&page=1&length=1000
+GET /_api/file-system-item/{root}/list?parent=src&page=1&length=1000
 ```
 
 {{ path("src/Api/Controller/FileSystemItemController.php") }} answers one directory, paginated. The level is read from the disk the first time it is asked for and from the table every time after — see {{ path("src/Service/FileSystemItemIndexer.php") }}. The `length` cap is there for the levels nobody wrote by hand: a `node_modules` must not be scanned, serialised and sent in one piece because someone opened it.

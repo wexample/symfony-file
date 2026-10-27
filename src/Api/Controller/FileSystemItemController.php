@@ -14,7 +14,7 @@ use Wexample\SymfonyFile\Service\FileSystemItemIndexer;
 use Wexample\SymfonyFile\Service\FileSystemItemScannerFactory;
 use Wexample\SymfonyHelpers\Controller\AbstractController;
 
-#[Route(path: 'api/file-system-item/', name: 'api_file_system_item_')]
+#[Route(path: '_api/file-system-item/', name: 'api_file_system_item_')]
 class FileSystemItemController extends AbstractApiController
 {
     final public const ROUTE_LIST = 'list';
