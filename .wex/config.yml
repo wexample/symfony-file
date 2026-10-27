@@ -4,7 +4,7 @@ git:
 global:
   name: symfony-file
   type: app
-  version: 4.0.17
+  version: 4.0.18
 wex:
-  migration: 2
+  migration: 3
   version: 6.0.150
