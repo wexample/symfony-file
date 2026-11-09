@@ -1,6 +1,6 @@
 # symfony-file
 
-Version: 5.0.2
+Version: 5.0.3
 
 File management helpers for Symfony
 
