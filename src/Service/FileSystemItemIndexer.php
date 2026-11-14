@@ -67,26 +67,32 @@ final readonly class FileSystemItemIndexer
     {
         $root = $scanner->getAbsoluteRootPath();
 
-        $this->items->removeRoot($root);
+        // One transaction from the drop to the last batch: a walk that fails
+        // halfway — a level that cannot be read, a batch refused — leaves the
+        // tree as it was rather than emptied, or a part of it written.
+        return $this->entityManager->getConnection()->transactional(function () use ($scanner, $root): int {
+            $this->items->removeRoot($root);
 
-        // The root stands for itself, and is the only entry nothing else opens:
-        // every other directory is written as an entry of the level above it.
-        $rows = [
-            $this->row($root, '', '', [
-                FileSystemItemScanner::KEY_NAME => '',
-                FileSystemItemScanner::KEY_TYPE => FileSystemItemType::DIRECTORY,
-                FileSystemItemScanner::KEY_HAS_CHILDREN => true,
-                FileSystemItemScanner::KEY_SIZE => 0,
-                FileSystemItemScanner::KEY_MODIFIED_AT => time(),
-                FileSystemItemScanner::KEY_PERMISSIONS => '',
-            ]),
-        ];
+            // The root stands for itself, and is the only entry nothing else
+            // opens: every other directory is written as an entry of the level
+            // above it.
+            $rows = [
+                $this->row($root, '', '', [
+                    FileSystemItemScanner::KEY_NAME => '',
+                    FileSystemItemScanner::KEY_TYPE => FileSystemItemType::DIRECTORY,
+                    FileSystemItemScanner::KEY_HAS_CHILDREN => true,
+                    FileSystemItemScanner::KEY_SIZE => 0,
+                    FileSystemItemScanner::KEY_MODIFIED_AT => time(),
+                    FileSystemItemScanner::KEY_PERMISSIONS => '',
+                ]),
+            ];
 
-        $count = $this->sweepLevel($scanner, $root, '', $rows);
+            $count = $this->sweepLevel($scanner, $root, '', $rows);
 
-        $this->items->insertMany($rows);
+            $this->items->insertMany($rows);
 
-        return $count;
+            return $count;
+        });
     }
 
     /**
@@ -213,11 +219,18 @@ final readonly class FileSystemItemIndexer
         string $parent,
         FileSystemItem $directory,
     ): void {
+        // What the table already holds for the level, read once and found by
+        // path, rather than a query per entry the disk lists.
+        $known = [];
+
+        foreach ($this->items->findLevel($root, $parent) as $item) {
+            $known[$item->getPath()] = $item;
+        }
+
         foreach ($scanner->scanLevel($parent) as $values) {
             $path = $values[FileSystemItemScanner::KEY_PATH];
 
-            $item = $this->items->findOneByLocation($root, $path)
-                ?? $this->items->createNewFileSystemItem($root, $path);
+            $item = $known[$path] ?? $this->items->createNewFileSystemItem($root, $path);
 
             $this->hydrator->hydrate($item, $values, $parent);
 

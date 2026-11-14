@@ -9,6 +9,11 @@
       "Wexample\\SymfonyFile\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Wexample\\SymfonyFile\\Tests\\": "tests/"
+    }
+  },
   "authors": [
     {
       "name": "weeger",
@@ -24,6 +29,18 @@
     "wexample/symfony-pseudocode": ">=4.0.2",
     "symfony/uid": ">=6.2"
   },
+  "require-dev": {
+    "phpunit/phpunit": "^13"
+  },
+  "repositories": [
+    {
+      "type": "path",
+      "url": "../*",
+      "options": {
+        "symlink": true
+      }
+    }
+  ],
   "extra": {
     "install": {
       "bundle_env": "all"
