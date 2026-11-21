@@ -3,7 +3,7 @@
   "description": "File management helpers for Symfony",
   "type": "library",
   "license": "MIT",
-  "version": "6.0.5",
+  "version": "6.0.6",
   "autoload": {
     "psr-4": {
       "Wexample\\SymfonyFile\\": "src/"
@@ -24,7 +24,7 @@
     "php": ">=8.5",
     "wexample/php-file": ">=2.1.0",
     "wexample/symfony-helpers": ">=19.3.0",
-    "wexample/symfony-api": ">=23.0.0",
+    "wexample/symfony-api": ">=24.0.0",
     "wexample/php-pseudocode": ">=3.1.0",
     "wexample/symfony-pseudocode": ">=4.0.2",
     "symfony/uid": ">=6.2"
